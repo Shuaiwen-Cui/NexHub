@@ -115,6 +115,10 @@ plugins:
           build: true
           nav_translations: # note that all titles and subtitles in the navigation bar that need to be translated can be put here, but with no indentation
             ABOUT: 关于
+            SERVER: 服务器
+            IOT-BROKER: 物联网中介
+            EMQX: EMQX
+            MQTTX: MQTTX
 
 
 
@@ -244,7 +248,12 @@ markdown_extensions:
 nav:
   - ABOUT: 
       - "index.md"
-
+  - SERVER:
+      - "SERVER/server.md"
+  - IOT-BROKER: 
+      # - IOT-BROKER: "./IOT-BROKER/iot-broker.md"
+      - EMQX: "./IOT-BROKER/EMQX/emqx.md"
+      - MQTTX: "./IOT-BROKER/MQTTX/mqttx.md"
 
 
     
