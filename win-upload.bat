@@ -12,7 +12,8 @@ git commit -m "auto commit by win-upload.bat"
 echo '--------commit successfully--------'
 
 @REM git push -f https://github.com/Shuaiwen-Cui/NexHub.git main
-git push -f https://github.com/Shuaiwen-Cui/NexHub.git main
+@REM git push -f https://github.com/Shuaiwen-Cui/NexHub.git main
+git push origin main
 @REM git remote add origin https://github.com/Shuaiwen-Cui/NexHub.git
 @REM git push -u origin main
 echo '--------push to GitHub successfully--------'

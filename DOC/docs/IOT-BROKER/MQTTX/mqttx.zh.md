@@ -1,4 +1,4 @@
-# MQTTX
+# MQTTX 软件
 
 !!! INFO "MQTTX"
     MQTTX 是一个跨平台的 MQTT 5.0 客户端工具，支持 Windows、macOS 和 Linux。它是一个开源项目，基于 [Electron](https://electronjs.org/) 开发。其最常见的用途是测试 MQTT 服务器，以确保服务器正常运行。
