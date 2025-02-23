@@ -8,6 +8,27 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/"/>
     </url>
     <url>
+        <loc>https://localhost:8000/IOT-BROKER/iot-broker/</loc>
+        <lastmod>2025-02-23</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://localhost:8000/IOT-BROKER/iot-broker/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/IOT-BROKER/iot-broker/"/>
+    </url>
+    <url>
+        <loc>https://localhost:8000/IOT-BROKER/EMQX/emqx/</loc>
+        <lastmod>2025-02-23</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://localhost:8000/IOT-BROKER/EMQX/emqx/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/IOT-BROKER/EMQX/emqx/"/>
+    </url>
+    <url>
+        <loc>https://localhost:8000/SERVER/server/</loc>
+        <lastmod>2025-02-23</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://localhost:8000/SERVER/server/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/SERVER/server/"/>
+    </url>
+    <url>
         <loc>https://localhost:8000/blog/</loc>
         <lastmod>2025-02-23</lastmod>
         <changefreq>daily</changefreq>
@@ -20,6 +41,27 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://localhost:8000/"/>
+    </url>
+    <url>
+        <loc>https://localhost:8000/zh/IOT-BROKER/iot-broker/</loc>
+        <lastmod>2025-02-23</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/IOT-BROKER/iot-broker/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://localhost:8000/IOT-BROKER/iot-broker/"/>
+    </url>
+    <url>
+        <loc>https://localhost:8000/zh/IOT-BROKER/EMQX/emqx/</loc>
+        <lastmod>2025-02-23</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/IOT-BROKER/EMQX/emqx/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://localhost:8000/IOT-BROKER/EMQX/emqx/"/>
+    </url>
+    <url>
+        <loc>https://localhost:8000/zh/SERVER/server/</loc>
+        <lastmod>2025-02-23</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://localhost:8000/zh/SERVER/server/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://localhost:8000/SERVER/server/"/>
     </url>
     <url>
         <loc>https://localhost:8000/zh/blog/</loc>
