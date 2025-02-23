@@ -17,7 +17,7 @@ git push -f https://github.com/Shuaiwen-Cui/NexHub.git main
 @REM git push -u origin main
 echo '--------push to GitHub successfully--------'
 
-cd ./MCU_DOC/
+cd ./DOC/
 mkdocs gh-deploy
 @REM echo '--------deployed to Github Pages sucessfully--------'
 
