@@ -1,4 +1,4 @@
-# MQTTX
+# MQTTX 
 
 !!! INFO "MQTTX"
     MQTTX is a cross-platform MQTT 5.0 client tool that supports Windows, macOS, and Linux. It is an open-source project developed based on [Electron](https://electronjs.org/). Its most common use is to test MQTT servers to ensure that they are running properly.
