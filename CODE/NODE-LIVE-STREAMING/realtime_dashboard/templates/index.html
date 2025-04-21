@@ -9,16 +9,33 @@
         body {
             font-family: Arial, sans-serif;
         }
-        #temperature {
-            font-size: 20px;
+        #status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 20px;
+        }
+        #device-status {
+            font-size: 18px;
             font-weight: bold;
-            margin: 10px;
-            text-align: right;
+        }
+        #temperature {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .online {
+            color: green;
+        }
+        .offline {
+            color: red;
         }
     </style>
 </head>
 <body>
-    <div id="temperature">Sensor Temp: -- °C</div>
+    <div id="status-bar">
+        <div id="device-status" class="offline">❌ Offline</div>
+        <div id="temperature">Sensor Temp: -- °C</div>
+    </div>
     <div id="chart" style="width: 100%; height: 800px;"></div>
 
     <script>
@@ -28,6 +45,8 @@
         let acc_x = [], acc_y = [], acc_z = [];
 
         const maxPoints = 100;
+        let deviceOnline = false;
+        let lastDataTime = 0;
 
         const layout = {
             grid: { rows: 3, columns: 1, pattern: 'independent' },
@@ -53,7 +72,39 @@
 
         Plotly.newPlot('chart', traces, layout);
 
+        // Monitor device status every 1s
+        setInterval(() => {
+            const now = Date.now();
+            const elapsed = now - lastDataTime;
+
+            if (elapsed > 1000) {
+                deviceOnline = false;
+                updateStatus(false);
+
+                // Inject 0 data if device offline
+                const t = new Date().toLocaleTimeString();
+                timeData.push(t);
+                acc_x.push(0);
+                acc_y.push(0);
+                acc_z.push(0);
+
+                if (timeData.length > maxPoints) {
+                    timeData.shift(); acc_x.shift(); acc_y.shift(); acc_z.shift();
+                }
+
+                Plotly.update('chart', {
+                    x: [timeData, timeData, timeData],
+                    y: [acc_x, acc_y, acc_z]
+                });
+            }
+        }, 1000);
+
+        // Handle incoming sensor data
         socket.on('sensor_data', data => {
+            lastDataTime = Date.now();
+            deviceOnline = true;
+            updateStatus(true);
+
             const t = data.time;
 
             timeData.push(t);
@@ -70,10 +121,21 @@
                 y: [acc_x, acc_y, acc_z]
             });
 
-            // Update temperature display
-            const tempText = `Sensor Temp: ${data.temperature.toFixed(2)} °C`;
-            document.getElementById('temperature').innerText = tempText;
+            // Update temperature
+            document.getElementById('temperature').innerText =
+                `Sensor Temp: ${data.temperature.toFixed(2)} °C`;
         });
+
+        function updateStatus(isOnline) {
+            const status = document.getElementById('device-status');
+            if (isOnline) {
+                status.textContent = "✅ Online";
+                status.className = "online";
+            } else {
+                status.textContent = "❌ Offline";
+                status.className = "offline";
+            }
+        }
     </script>
 </body>
 </html>
