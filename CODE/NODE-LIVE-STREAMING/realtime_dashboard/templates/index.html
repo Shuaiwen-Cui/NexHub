@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time Accelerometer Viewer</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #temperature {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div id="temperature">Sensor Temp: -- °C</div>
+    <div id="chart" style="width: 100%; height: 800px;"></div>
+
+    <script>
+        const socket = io();
+
+        let timeData = [];
+        let acc_x = [], acc_y = [], acc_z = [];
+
+        const maxPoints = 100;
+
+        const layout = {
+            grid: { rows: 3, columns: 1, pattern: 'independent' },
+            title: 'Accelerometer Data (X, Y, Z)',
+            height: 800,
+            showlegend: false
+        };
+
+        const traces = [
+            {
+                x: [], y: [], name: 'acc_x', mode: 'lines',
+                line: { color: 'red' }, xaxis: 'x1', yaxis: 'y1'
+            },
+            {
+                x: [], y: [], name: 'acc_y', mode: 'lines',
+                line: { color: 'green' }, xaxis: 'x2', yaxis: 'y2'
+            },
+            {
+                x: [], y: [], name: 'acc_z', mode: 'lines',
+                line: { color: 'blue' }, xaxis: 'x3', yaxis: 'y3'
+            },
+        ];
+
+        Plotly.newPlot('chart', traces, layout);
+
+        socket.on('sensor_data', data => {
+            const t = data.time;
+
+            timeData.push(t);
+            acc_x.push(data.acc_x);
+            acc_y.push(data.acc_y);
+            acc_z.push(data.acc_z);
+
+            if (timeData.length > maxPoints) {
+                timeData.shift(); acc_x.shift(); acc_y.shift(); acc_z.shift();
+            }
+
+            Plotly.update('chart', {
+                x: [timeData, timeData, timeData],
+                y: [acc_x, acc_y, acc_z]
+            });
+
+            // Update temperature display
+            const tempText = `Sensor Temp: ${data.temperature.toFixed(2)} °C`;
+            document.getElementById('temperature').innerText = tempText;
+        });
+    </script>
+</body>
+</html>
