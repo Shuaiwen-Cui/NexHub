@@ -2,140 +2,188 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Real-Time Accelerometer Viewer</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Real-Time Accelerometer Viewer (SmoothieChart)</title>
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/smoothie@1.36.0/smoothie.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            background: #ffffff; /* 主体白色背景 */
         }
-        #status-bar {
+
+        #top-bar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin: 10px 20px;
+            align-items: flex-start;
+            padding: 20px 40px 10px 40px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+            flex-wrap: wrap;
         }
-        #device-status {
-            font-size: 18px;
+
+        .status-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .status-line {
+            font-size: 15px;
             font-weight: bold;
         }
-        #temperature {
-            font-size: 18px;
-            font-weight: bold;
-        }
+
         .online {
             color: green;
         }
+
         .offline {
             color: red;
         }
+
+        #clear-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        #clear-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .channel-block {
+            margin-bottom: 40px;
+        }
+
+        .channel-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 180px;
+            border: 1px solid #ccc;
+            display: block;
+            box-shadow: 0 0 3px rgba(0,0,0,0.08);
+        }
+
+        #chartX { background-color: #fff5f5; } /* 淡红色背景 */
+        #chartY { background-color: #f5fff5; } /* 淡绿色背景 */
+        #chartZ { background-color: #f5f9ff; } /* 淡蓝色背景 */
     </style>
 </head>
 <body>
-    <div id="status-bar">
-        <div id="device-status" class="offline">❌ Offline</div>
-        <div id="temperature">Sensor Temp: -- °C</div>
+
+    <div id="top-bar">
+        <div class="status-container">
+            <div class="status-line" id="device-status">❌ Offline</div>
+            <div class="status-line" id="temperature">Temp: -- °C</div>
+            <div class="status-line" id="sampling-rate">Rate: -- Hz</div>
+            <div class="status-line" id="frame-rate">FPS: --</div>
+        </div>
+        <button id="clear-btn">Clear Curves</button>
     </div>
-    <div id="chart" style="width: 100%; height: 800px;"></div>
+
+    <div class="content">
+        <div class="channel-block">
+            <div class="channel-title" style="color: red;">Accelerometer X</div>
+            <canvas id="chartX" width="1000" height="180"></canvas>
+        </div>
+        <div class="channel-block">
+            <div class="channel-title" style="color: green;">Accelerometer Y</div>
+            <canvas id="chartY" width="1000" height="180"></canvas>
+        </div>
+        <div class="channel-block">
+            <div class="channel-title" style="color: blue;">Accelerometer Z</div>
+            <canvas id="chartZ" width="1000" height="180"></canvas>
+        </div>
+    </div>
 
     <script>
         const socket = io();
 
-        let timeData = [];
-        let acc_x = [], acc_y = [], acc_z = [];
+        let lastTimestamp = null;
+        let lastDataTime = Date.now();
+        let fps = 0;
+        let frameCounter = 0;
 
-        const maxPoints = 100;
-        let deviceOnline = false;
-        let lastDataTime = 0;
-
-        const layout = {
-            grid: { rows: 3, columns: 1, pattern: 'independent' },
-            title: 'Accelerometer Data (X, Y, Z)',
-            height: 800,
-            showlegend: false
-        };
-
-        const traces = [
-            {
-                x: [], y: [], name: 'acc_x', mode: 'lines',
-                line: { color: 'red' }, xaxis: 'x1', yaxis: 'y1'
-            },
-            {
-                x: [], y: [], name: 'acc_y', mode: 'lines',
-                line: { color: 'green' }, xaxis: 'x2', yaxis: 'y2'
-            },
-            {
-                x: [], y: [], name: 'acc_z', mode: 'lines',
-                line: { color: 'blue' }, xaxis: 'x3', yaxis: 'y3'
-            },
-        ];
-
-        Plotly.newPlot('chart', traces, layout);
-
-        // Monitor device status every 1s
         setInterval(() => {
-            const now = Date.now();
-            const elapsed = now - lastDataTime;
+            document.getElementById("frame-rate").innerText = `FPS: ${fps}`;
+            fps = frameCounter;
+            frameCounter = 0;
 
-            if (elapsed > 1000) {
-                deviceOnline = false;
-                updateStatus(false);
-
-                // Inject 0 data if device offline
-                const t = new Date().toLocaleTimeString();
-                timeData.push(t);
-                acc_x.push(0);
-                acc_y.push(0);
-                acc_z.push(0);
-
-                if (timeData.length > maxPoints) {
-                    timeData.shift(); acc_x.shift(); acc_y.shift(); acc_z.shift();
-                }
-
-                Plotly.update('chart', {
-                    x: [timeData, timeData, timeData],
-                    y: [acc_x, acc_y, acc_z]
-                });
+            if (Date.now() - lastDataTime > 1000) {
+                document.getElementById("device-status").innerText = "❌ Offline";
+                document.getElementById("device-status").className = "status-line offline";
             }
         }, 1000);
 
-        // Handle incoming sensor data
-        socket.on('sensor_data', data => {
-            lastDataTime = Date.now();
-            deviceOnline = true;
-            updateStatus(true);
-
-            const t = data.time;
-
-            timeData.push(t);
-            acc_x.push(data.acc_x);
-            acc_y.push(data.acc_y);
-            acc_z.push(data.acc_z);
-
-            if (timeData.length > maxPoints) {
-                timeData.shift(); acc_x.shift(); acc_y.shift(); acc_z.shift();
-            }
-
-            Plotly.update('chart', {
-                x: [timeData, timeData, timeData],
-                y: [acc_x, acc_y, acc_z]
+        function createChart(color, canvasId) {
+            const chart = new SmoothieChart({
+                millisPerPixel: 10,
+                grid: { strokeStyle: 'rgba(150,150,150,0.15)', verticalSections: 4 },
+                labels: { disabled: false },
+                maxValueScale: 1.2,
+                minValueScale: 1.2
             });
-
-            // Update temperature
-            document.getElementById('temperature').innerText =
-                `Sensor Temp: ${data.temperature.toFixed(2)} °C`;
-        });
-
-        function updateStatus(isOnline) {
-            const status = document.getElementById('device-status');
-            if (isOnline) {
-                status.textContent = "✅ Online";
-                status.className = "online";
-            } else {
-                status.textContent = "❌ Offline";
-                status.className = "offline";
-            }
+            const series = new TimeSeries();
+            chart.addTimeSeries(series, { strokeStyle: color, lineWidth: 2 });
+            chart.streamTo(document.getElementById(canvasId), 0);
+            return series;
         }
+
+        const seriesX = createChart('red', 'chartX');
+        const seriesY = createChart('green', 'chartY');
+        const seriesZ = createChart('blue', 'chartZ');
+
+        document.getElementById('clear-btn').onclick = () => {
+            seriesX.clear();
+            seriesY.clear();
+            seriesZ.clear();
+        };
+
+        socket.on('sensor_data', (data) => {
+            const now = Date.now();
+            lastDataTime = now;
+            frameCounter++;
+
+            const accX = data.acc_x;
+            const accY = data.acc_y;
+            const accZ = data.acc_z;
+            const temp = data.temperature;
+            const ts = parseInt(data.time);
+
+            if (lastTimestamp) {
+                const delta = ts - lastTimestamp;
+                if (delta > 0) {
+                    const rate = Math.round(1_000_000 / delta);
+                    document.getElementById("sampling-rate").innerText = `Rate: ${rate} Hz`;
+                }
+            }
+            lastTimestamp = ts;
+
+            // ✅ 确保追加到了正确的 TimeSeries
+            seriesX.append(now, accX);
+            seriesY.append(now, accY);
+            seriesZ.append(now, accZ);
+
+            document.getElementById("temperature").innerText = `Temp: ${temp.toFixed(2)} °C`;
+            document.getElementById("device-status").innerText = "✅ Online";
+            document.getElementById("device-status").className = "status-line online";
+        });
     </script>
 </body>
 </html>
